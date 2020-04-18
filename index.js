@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const logger = require("./data/middleware/logger");
+const welcomeRouter = require("./data/welcome-router");
 const projectRouter = require("./data/project-router");
 const actionRouter = require("./data/action-router");
 
@@ -11,8 +12,9 @@ server.use(express.json());
 server.use(cors());
 server.use(logger("long"));
 
-server.use("/", projectRouter);
-server.use("/:id/actions", actionRouter);
+server.use("/", welcomeRouter);
+server.use("/projects", projectRouter);
+server.use("/projects/:id/actions", actionRouter);
 
 server.use((req, res) => {
     res.status(400).json({

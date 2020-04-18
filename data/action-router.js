@@ -3,35 +3,34 @@ const actionModel = require("./helpers/actionModel");
 
 const router = express.Router();
 
-router.get("/", (req, res, next) => {
-    actionModel
-        .get(req.params.id)
-        .then((action) => {
-            res.status(200).json(action);
-        })
-        .catch((err) => {
-            next(err);
-        });
+router.get("/", async (req, res, next) => {
+    try {
+        const data = await actionModel.get();
+        res.status(200).json(data);
+    } catch (err) {
+        next(err);
+    }
 });
 
 router.get("/:id", validateActionID(), (req, res) => {
     res.status(200).json(req.action);
 });
 
-router.post("/:id", validateActionID(), (req, res, next) => {
+router.post("/", validateActionID(), validateActionData(), (req, res, next) => {
     if (res.project_id !== req.params.id) {
         return res.status(404).json({
             message: "project does not exist",
         });
+    } else {
+        actionModel
+            .insert(req.body)
+            .then((action) => {
+                res.status(201).json(action);
+            })
+            .catch((err) => {
+                next(err);
+            });
     }
-    actionModel
-        .insert(req.body)
-        .then((action) => {
-            res.status(201).json(action);
-        })
-        .catch((err) => {
-            next(err);
-        });
 });
 
 router.put(
@@ -71,12 +70,13 @@ router.delete("/:id", validateActionID(), (req, res, next) => {
 });
 
 function validateActionData() {
-    return (req, res) => {
+    return (req, res, next) => {
         if (!req.body.description || !req.body.notes) {
             return res.status(400).json({
                 message: "You are missing the action description or notes. ",
             });
         }
+        next();
     };
 }
 

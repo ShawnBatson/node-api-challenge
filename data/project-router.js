@@ -3,15 +3,13 @@ const projectModel = require("./helpers/projectModel");
 
 const router = express.Router();
 
-router.get("/", (req, res, next) => {
-    projectModel
-        .get(req.params.id)
-        .then((project) => {
-            res.status(200).json(project);
-        })
-        .catch((err) => {
-            next(err);
-        });
+router.get("/", async (req, res, next) => {
+    try {
+        const data = await projectModel.get();
+        res.status(200).json(data);
+    } catch (err) {
+        next(err);
+    }
 });
 
 router.get("/:id", validateProjectID(), (req, res) => {
@@ -20,7 +18,7 @@ router.get("/:id", validateProjectID(), (req, res) => {
 
 router.post("/", validateProjectData(), (req, res, next) => {
     projectModel
-        .inster(req.body)
+        .insert(req.body)
         .then((project) => {
             res.status(201).json(project);
         })
@@ -76,12 +74,13 @@ router.get("/:id/actions", validateProjectID(), (req, res, next) => {
 });
 
 function validateProjectData() {
-    return (req, res) => {
+    return (req, res, next) => {
         if (!req.body.name || !req.body.description) {
             return res.status(400).json({
                 message: "Missing project name or description",
             });
         }
+        next();
     };
 }
 
