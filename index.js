@@ -1,3 +1,38 @@
+const express = require("express");
+const cors = require("cors");
+const logger = require("./data/middleware/logger");
+const welcomeRouter = require("./data/welcome-router");
+const projectRouter = require("./data/project-router");
+const actionRouter = require("./data/action-router");
+
+const server = express();
+const port = process.env.PORT || 4000;
+
+server.use(express.json());
+server.use(cors());
+server.use(logger("long"));
+
+server.use("/", welcomeRouter);
+server.use("/projects", projectRouter);
+server.use("/projects/:id/actions", actionRouter);
+
+server.use((req, res) => {
+    res.status(400).json({
+        message: "Route was not found",
+    });
+});
+
+server.use((err, req, res, next) => {
+    console.log(err);
+    res.status(500).json({
+        message: "Something went wrong",
+    });
+});
+
+server.listen(port, () => {
+    console.log(`Server is running on ${port}`);
+});
+
 /*
 play this: https://www.youtube.com/watch?v=d-diB65scQU
 
